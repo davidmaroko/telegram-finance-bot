@@ -26,7 +26,7 @@ def home():
 
 # Webhook לטלגרם  
 @app.route("/webhook", methods=["POST"])
-def webhook():
+async def webhook():
     data = request.get_json()
     logging.info(f"Received update: {data}")  # הדפסת הנתונים ללוגים
 
@@ -34,7 +34,7 @@ def webhook():
         # ודא שה-Update מכיל "message" לפני עיבודו
         if "message" in data:
             update = Update.de_json(data, bot)
-            application.process_update(update)
+            await application.process_update(update)  # הוספנו await
             logging.info("Message processed successfully.")
         else:
             logging.warning("Skipping update, no 'message' key found.")
@@ -43,6 +43,7 @@ def webhook():
     except Exception as e:
         logging.error(f"Error processing update: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
+
 
 # פונקציה שמופעלת כשמשתמש שולח הודעה לבוט
 async def handle_message(update: Update, context: CallbackContext):
