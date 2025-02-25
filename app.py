@@ -41,9 +41,12 @@ def home():
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.get_json()
+    print(f"Received update: {data}")  # הדפסה ללוגים
     update = Update.de_json(data, bot)
     application.process_update(update)
     return jsonify({"status": "received"}), 200
+
+
 
 # פונקציה שמופעלת כשמשתמש שולח הודעה לבוט
 async def handle_message(update: Update, context: CallbackContext):
