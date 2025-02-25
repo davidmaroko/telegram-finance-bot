@@ -59,7 +59,27 @@ async def handle_message(update: Update, context: CallbackContext):
 
     response = f"התקבלה הודעה: {text}"
     await bot.send_message(chat_id=chat_id, text=response)
-    logging.info(f"Sent response to {chat_id}")
+    logging.info(f"Sent response to {chat_id}")async def handle_message(update: Update, context: CallbackContext):
+    chat_id = update.message.chat_id
+    text = update.message.text
+    logging.info(f"Received message from {chat_id}: {text}")
+
+    # בדיקה אם המשתמש רשאי להשתמש בבוט
+    if chat_id not in AUTHORIZED_USERS:
+        logging.warning(f"Unauthorized user {chat_id} tried to access the bot.")
+        await bot.send_message(chat_id=chat_id, text="❌ you are not allowed to use this bot.")
+        logging.info(f"Sent unauthorized message to {chat_id}")
+        return
+
+    response = f"התקבלה הודעה: {text}"
+    logging.info(f"Attempting to send message to {chat_id}: {response}")
+    
+    try:
+        await bot.send_message(chat_id=chat_id, text=response)
+        logging.info(f"Successfully sent message to {chat_id}")
+    except Exception as e:
+        logging.error(f"Error sending message to {chat_id}: {e}")
+
 
 # הוספת ה-Handler החדש
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
