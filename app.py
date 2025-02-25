@@ -53,8 +53,11 @@ async def handle_message(update: Update, context: CallbackContext):
     # בדיקה אם המשתמש רשאי להשתמש בבוט
     if chat_id not in AUTHORIZED_USERS:
         logging.warning(f"Unauthorized user {chat_id} tried to access the bot.")
-        await bot.send_message(chat_id=chat_id, text="❌ you are not allowed to use this bot.")
-        logging.info(f"Sent unauthorized message to {chat_id}")
+        try:
+            await bot.send_message(chat_id=chat_id, text="❌ you are not allowed to use this bot.")
+            logging.info(f"Sent unauthorized message to {chat_id}")
+        except Exception as e:
+            logging.error(f"Failed to send unauthorized message: {e}")
         return
 
     response = f"התקבלה הודעה: {text}"
