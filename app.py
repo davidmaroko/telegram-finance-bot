@@ -14,9 +14,16 @@ app = Flask(__name__)
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
 
-# יצירת Application
+# יצירת Application והפעלתו
 application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
-application.initialize()  # אתחול האפליקציה לפני שימוש
+
+# אתחול `Application`
+async def start_application():
+    await application.initialize()
+    await application.start()
+
+# הפעלת האפליקציה ברקע
+asyncio.run(start_application())
 
 # רשימת משתמשים מורשים
 AUTHORIZED_USERS = {6406831521}  # הכנס כאן את ה-Chat ID של המשתמשים המורשים
@@ -53,7 +60,7 @@ application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_m
 def home():
     return "Telegram Finance Bot is Running!", 200
 
-# Webhook לטלגרם (ללא async)
+# Webhook לטלגרם
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.get_json()
@@ -63,12 +70,9 @@ def webhook():
         if "message" in data:
             update = Update.de_json(data, bot)
             
-            # וידוא שה-event loop של asyncio פעיל
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                loop.create_task(application.process_update(update))
-            else:
-                asyncio.run(application.process_update(update))
+            # הפעלת העדכון ב-event loop של asyncio
+            loop = asyncio.get_running_loop()
+            loop.create_task(application.process_update(update))
 
             logging.info("Message processed successfully.")
         else:
