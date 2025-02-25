@@ -1,5 +1,6 @@
 import os
 import logging
+import asyncio
 from flask import Flask, request, jsonify
 from telegram import Bot, Update
 from telegram.ext import Application, MessageHandler, filters, CallbackContext
@@ -24,17 +25,17 @@ AUTHORIZED_USERS = {6406831521}  # הכנס כאן את ה-Chat ID של המשת
 def home():
     return "Telegram Finance Bot is Running!", 200
 
-# Webhook לטלגרם  
+# Webhook לטלגרם (ללא async)
 @app.route("/webhook", methods=["POST"])
-async def webhook():
+def webhook():
     data = request.get_json()
     logging.info(f"Received update: {data}")  # הדפסת הנתונים ללוגים
 
     try:
-        # ודא שה-Update מכיל "message" לפני עיבודו
         if "message" in data:
             update = Update.de_json(data, bot)
-            await application.process_update(update)  # הוספנו await
+            loop = asyncio.get_event_loop()
+            loop.create_task(application.process_update(update))  # שימוש ב-asyncio בצורה תקינה
             logging.info("Message processed successfully.")
         else:
             logging.warning("Skipping update, no 'message' key found.")
@@ -43,7 +44,6 @@ async def webhook():
     except Exception as e:
         logging.error(f"Error processing update: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
-
 
 # פונקציה שמופעלת כשמשתמש שולח הודעה לבוט
 async def handle_message(update: Update, context: CallbackContext):
