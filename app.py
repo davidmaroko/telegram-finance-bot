@@ -16,6 +16,7 @@ bot = Bot(token=TELEGRAM_BOT_TOKEN)
 
 # יצירת Application
 application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+application.initialize()  # אתחול האפליקציה לפני שימוש
 
 # רשימת משתמשים מורשים
 AUTHORIZED_USERS = {6406831521}  # הכנס כאן את ה-Chat ID של המשתמשים המורשים
@@ -52,25 +53,7 @@ application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_m
 def home():
     return "Telegram Finance Bot is Running!", 200
 
-# # Webhook לטלגרם (ללא async)
-# @app.route("/webhook", methods=["POST"])
-# def webhook():
-    # data = request.get_json()
-    # logging.info(f"Received update: {data}")  # הדפסת הנתונים ללוגים
-
-    # try:
-        # if "message" in data:
-            # update = Update.de_json(data, bot)
-            # asyncio.create_task(application.process_update(update))  # הפעלת ה-Dispatcher בצורה נכונה
-            # logging.info("Message processed successfully.")
-        # else:
-            # logging.warning("Skipping update, no 'message' key found.")
-
-        # return jsonify({"status": "received"}), 200
-    # except Exception as e:
-        # logging.error(f"Error processing update: {e}")
-        # return jsonify({"status": "error", "message": str(e)}), 500
-        
+# Webhook לטלגרם (ללא async)
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.get_json()
@@ -96,8 +79,5 @@ def webhook():
         logging.error(f"Error processing update: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-
-
 if __name__ == "__main__":
-    application.run_polling()  # הפעלה של ה-Handlers של הבוט ברקע
     app.run(host="0.0.0.0", port=5000)
