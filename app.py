@@ -52,7 +52,25 @@ application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_m
 def home():
     return "Telegram Finance Bot is Running!", 200
 
-# Webhook לטלגרם (ללא async)
+# # Webhook לטלגרם (ללא async)
+# @app.route("/webhook", methods=["POST"])
+# def webhook():
+    # data = request.get_json()
+    # logging.info(f"Received update: {data}")  # הדפסת הנתונים ללוגים
+
+    # try:
+        # if "message" in data:
+            # update = Update.de_json(data, bot)
+            # asyncio.create_task(application.process_update(update))  # הפעלת ה-Dispatcher בצורה נכונה
+            # logging.info("Message processed successfully.")
+        # else:
+            # logging.warning("Skipping update, no 'message' key found.")
+
+        # return jsonify({"status": "received"}), 200
+    # except Exception as e:
+        # logging.error(f"Error processing update: {e}")
+        # return jsonify({"status": "error", "message": str(e)}), 500
+        
 @app.route("/webhook", methods=["POST"])
 def webhook():
     data = request.get_json()
@@ -61,7 +79,14 @@ def webhook():
     try:
         if "message" in data:
             update = Update.de_json(data, bot)
-            asyncio.create_task(application.process_update(update))  # הפעלת ה-Dispatcher בצורה נכונה
+            
+            # וידוא שה-event loop של asyncio פעיל
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                loop.create_task(application.process_update(update))
+            else:
+                asyncio.run(application.process_update(update))
+
             logging.info("Message processed successfully.")
         else:
             logging.warning("Skipping update, no 'message' key found.")
@@ -70,6 +95,8 @@ def webhook():
     except Exception as e:
         logging.error(f"Error processing update: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
+
+
 
 if __name__ == "__main__":
     application.run_polling()  # הפעלה של ה-Handlers של הבוט ברקע
