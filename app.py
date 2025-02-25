@@ -20,31 +20,7 @@ application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
 # רשימת משתמשים מורשים
 AUTHORIZED_USERS = {6406831521}  # הכנס כאן את ה-Chat ID של המשתמשים המורשים
 
-# דף הבית לבדיקה
-@app.route("/")
-def home():
-    return "Telegram Finance Bot is Running!", 200
-
-# Webhook לטלגרם (ללא async)
-@app.route("/webhook", methods=["POST"])
-def webhook():
-    data = request.get_json()
-    logging.info(f"Received update: {data}")  # הדפסת הנתונים ללוגים
-
-    try:
-        if "message" in data:
-            update = Update.de_json(data, bot)
-            loop = asyncio.get_event_loop()
-            loop.create_task(application.process_update(update))  # שימוש ב-asyncio בצורה תקינה
-            logging.info("Message processed successfully.")
-        else:
-            logging.warning("Skipping update, no 'message' key found.")
-
-        return jsonify({"status": "received"}), 200
-    except Exception as e:
-        logging.error(f"Error processing update: {e}")
-        return jsonify({"status": "error", "message": str(e)}), 500
-
+# פונקציה שמופעלת כשמשתמש שולח הודעה לבוט
 async def handle_message(update: Update, context: CallbackContext):
     chat_id = update.message.chat_id
     text = update.message.text
@@ -69,9 +45,32 @@ async def handle_message(update: Update, context: CallbackContext):
     except Exception as e:
         logging.error(f"Error sending message to {chat_id}: {e}")
 
-
 # הוספת ה-Handler החדש
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
+@app.route("/")
+def home():
+    return "Telegram Finance Bot is Running!", 200
+
+# Webhook לטלגרם (ללא async)
+@app.route("/webhook", methods=["POST"])
+def webhook():
+    data = request.get_json()
+    logging.info(f"Received update: {data}")  # הדפסת הנתונים ללוגים
+
+    try:
+        if "message" in data:
+            update = Update.de_json(data, bot)
+            asyncio.create_task(application.process_update(update))  # הפעלת ה-Dispatcher בצורה נכונה
+            logging.info("Message processed successfully.")
+        else:
+            logging.warning("Skipping update, no 'message' key found.")
+
+        return jsonify({"status": "received"}), 200
+    except Exception as e:
+        logging.error(f"Error processing update: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 if __name__ == "__main__":
+    application.run_polling()  # הפעלה של ה-Handlers של הבוט ברקע
     app.run(host="0.0.0.0", port=5000)
