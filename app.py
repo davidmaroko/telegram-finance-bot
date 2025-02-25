@@ -45,21 +45,7 @@ def webhook():
         logging.error(f"Error processing update: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-# פונקציה שמופעלת כשמשתמש שולח הודעה לבוט
 async def handle_message(update: Update, context: CallbackContext):
-    chat_id = update.message.chat_id
-    text = update.message.text
-    logging.info(f"Received message from {chat_id}: {text}")
-
-    # בדיקה אם המשתמש רשאי להשתמש בבוט
-    if chat_id not in AUTHORIZED_USERS:
-        logging.warning(f"Unauthorized user {chat_id} tried to access the bot.")
-        await bot.send_message(chat_id=chat_id, text="❌ you are not allowed to use this bot.")
-        return
-
-    response = f"התקבלה הודעה: {text}"
-    await bot.send_message(chat_id=chat_id, text=response)
-    logging.info(f"Sent response to {chat_id}")async def handle_message(update: Update, context: CallbackContext):
     chat_id = update.message.chat_id
     text = update.message.text
     logging.info(f"Received message from {chat_id}: {text}")
