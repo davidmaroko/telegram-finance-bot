@@ -2,7 +2,15 @@ from flask import Flask, request
 import telebot
 import os
 
-TOKEN = os.getenv("TELEGRAM_BOT_TOKEN ")  # עדיף לא לשמור טוקנים ישירות בקוד
+import os
+
+TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+
+if not TOKEN:
+    raise ValueError("TELEGRAM_BOT_TOKEN is missing! Check your environment variables.")
+
+print(f"Loaded TELEGRAM_BOT_TOKEN: {TOKEN[:10]}...")  # הדפסה חלקית לבדיקה
+
 bot = telebot.TeleBot(TOKEN)
 
 app = Flask(__name__)
