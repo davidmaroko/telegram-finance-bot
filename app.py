@@ -1,12 +1,12 @@
 from flask import Flask, request
 import telebot
+import os
 
-TOKEN = "YOUR_BOT_TOKEN"
+TOKEN = os.getenv("TELEGRAM_BOT_TOKEN ")  # עדיף לא לשמור טוקנים ישירות בקוד
 bot = telebot.TeleBot(TOKEN)
 
 app = Flask(__name__)
 
-# נתיב שבו טלגרם ישלח הודעות
 @app.route('/webhook', methods=['POST'])
 def webhook():
     update = request.get_json()
@@ -14,21 +14,18 @@ def webhook():
         bot.process_new_updates([telebot.types.Update.de_json(update)])
     return '', 200
 
-# נקודת בדיקה
 @app.route('/')
 def home():
-    return "The bot is running!", 200
+    return "The bot is running on Render!", 200
 
-# פקודה שמטפלת בהודעות
+# טיפול בהודעות טלגרם
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.send_message(message.chat.id, "שלום! אני מחובר לאתר שלך.")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
-
-
-
+    port = int(os.environ.get("PORT", 5000))  # שימוש בפורט דינמי
+    app.run(host="0.0.0.0", port=port, debug=True)
 
 # import os
 # import logging
