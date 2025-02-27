@@ -13,6 +13,8 @@ bot = telebot.TeleBot(TOKEN)
 
 app = Flask(__name__)
 
+AUTHORIZED_USERS = {6406831521}  # החלף במספר ה-Chat ID שלך
+
 @app.route('/webhook', methods=['POST'])
 def webhook():
     update = request.get_json()
@@ -27,13 +29,32 @@ def home():
 # טיפול בהודעות טלגרם
 @bot.message_handler(commands=['start'])
 def start(message):
+    if message.chat.id not in AUTHORIZED_USERS:
+        bot.send_message(message.chat.id, "❌ אתה לא מורשה להשתמש בבוט הזה.")
+        return
     bot.send_message(message.chat.id, "שלום! אני מחובר לאתר שלך.")
 
-# טיפול בכל הודעה שנשלחת לבוט
-@bot.message_handler(func=lambda message: True)  # מתייחס לכל הודעה
+# טיפול בהודעות רק למשתמשים מורשים
+@bot.message_handler(func=lambda message: True)
 def echo_all(message):
-    response = f"תשובה: {message.text}"  # מוסיף את הקידומת "תשובה:"
-    bot.send_message(message.chat.id, response)  # שולח חזרה את ההודעה
+    if message.chat.id not in AUTHORIZED_USERS:
+        bot.send_message(message.chat.id, "❌ אין לך הרשאה להשתמש בבוט הזה.")
+        return
+    
+    response = f"תשובה: {message.text}"
+    bot.send_message(message.chat.id, response)
+
+
+# # טיפול בהודעות טלגרם
+# @bot.message_handler(commands=['start'])
+# def start(message):
+    # bot.send_message(message.chat.id, "שלום! אני מחובר לאתר שלך.")
+
+# # טיפול בכל הודעה שנשלחת לבוט
+# @bot.message_handler(func=lambda message: True)  # מתייחס לכל הודעה
+# def echo_all(message):
+    # response = f"תשובה: {message.text}"  # מוסיף את הקידומת "תשובה:"
+    # bot.send_message(message.chat.id, response)  # שולח חזרה את ההודעה
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  # שימוש בפורט דינמי
